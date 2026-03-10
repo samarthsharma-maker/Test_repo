@@ -1,0 +1,40 @@
+name: Service Release
+
+on:
+  workflow_dispatch:              # Fix 1: was 'workflow_dipatch'
+    inputs:
+      service_name:
+        description: "Name of the service to release"
+        type: string
+        required: true
+      version:
+        description: "Release version (e.g. v1.4.0)"
+        type: string
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest        # Fix 2: was 'self-hosted-prod'
+    steps:
+      - name: Checkout repository # Fix 3: moved to first step (was after Run tests)
+        uses: actions/checkout@v3
+
+      - name: Print release info
+        run: |
+          echo "Releasing ${{ inputs.service_name }} version ${{ inputs.version }}"
+
+      - name: Run tests            # Fix 4: removed 'continue-on-error: true'
+        run: |
+          echo "Running test suite..."
+          # In a real workflow this would invoke the test runner
+          # e.g.: ./scripts/run-tests.sh
+
+      - name: Build release artifact
+        run: |
+          echo "Building artifact for ${{ inputs.service_name }}..."
+          mkdir -p dist
+          echo "${{ inputs.version }}" > dist/VERSION
+
+      - name: Publish release summary
+        run: |
+          echo "Release ${{ inputs.version }} of ${{ inputs.service_name }} complete."
